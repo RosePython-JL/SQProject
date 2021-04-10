@@ -1,10 +1,13 @@
 package org.gcalc;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * A superset of the contained Expression class, which can handle equalities.
  * Attempts to algebraically simplify the Equation when it is constructed, so
@@ -13,6 +16,7 @@ import java.util.Map;
 public class Equation {
     private Expression rhs;
     boolean isEmpty;
+    Logger logger = LoggerFactory.getLogger(Equation.class);
 
     /**
      * Parses either an expression (no = in the string) or an equation, and
@@ -22,28 +26,36 @@ public class Equation {
      * @throws InvalidParameterException if the equation is malformed
      */
     public Equation(String rawEquation) throws InvalidParameterException {
+        logger.debug("equation input");
         rawEquation = rawEquation.replaceAll(" ", "");
         if (rawEquation.isEmpty()) {
             this.isEmpty = true;
+            logger.debug("equation empty");
             return;
         }
 
         String[] equationParts = rawEquation.split("=");
 
-        if (equationParts.length > 2)
+        if (equationParts.length > 2) {
+            logger.debug("contains equal sign");
             throw new InvalidParameterException(
                     "Equation must not contain multiple equalities");
 
-        if (!rawEquation.contains("="))
+        }
+        if (!rawEquation.contains("=")) {
             // We assume that if no equality is specified, that the entire
             // expression is equal to y
+            logger.debug("contains no equation sign");
             this.rhs = new Expression(rawEquation);
+        }
         else {
             // If an equality is specified, we need to make sure that the
             // equation is expressed in terms of y, so that the evaluate()
             // method works properly (it's rather naive)
+            /*
             equationParts[1] = this.rearrange(equationParts[0], equationParts[1]);
             equationParts[0] = "y";
+             */
         }
     }
 
@@ -60,9 +72,13 @@ public class Equation {
      * @return Array of roots - each root is either a valid number, or NaN
      */
     public double[] evaluate(double x) {
-        if (this.isEmpty)
+
+        if (this.isEmpty) {
+            logger.debug("if equation is empty");
             return new double[]{Double.NaN};
+        }
         else {
+            logger.debug("evaluate for x");
             Map<String, Double> args = new HashMap<>();
             args.put("x", x);
 
@@ -75,9 +91,6 @@ public class Equation {
      *
      * @return The right hand side of the Equation
      */
-    public Expression getRightHandSide() {
-        return this.rhs;
-    }
 
     /**
      * Rearranges an equation to be expressed in terms of y.
@@ -87,9 +100,7 @@ public class Equation {
      * @return The expression on the right side of the rearranged equation's
      *         equals sign (left side is implied to be `y=`)
      */
-    private String rearrange(String lhs, String rhs) {
-        return null;
-    }
+
 
     /**
      * Simple subset of the Equation type, which cannot contain equalities.
@@ -97,6 +108,7 @@ public class Equation {
      * variables in the expression.
      */
     public static class Expression {
+        Logger logger = LoggerFactory.getLogger(Equation.class);
         /**
          * String which was passed to the constructor
          */
@@ -133,6 +145,7 @@ public class Equation {
          */
         @Override
         public String toString() {
+            logger.debug("convert raw expression to string");
             String ret = "Expression \"" + this.rawExpression + "\" {\n";
 
             int stackN = 0;
@@ -552,6 +565,7 @@ public class Equation {
  * instructions, most instructions do not have any operands.
  */
 class Instruction {
+    Logger logger = LoggerFactory.getLogger(Equation.class);
     /**
      * All supported operation types.
      */
@@ -599,16 +613,22 @@ class Instruction {
     public static Instruction fromOperator(char op) {
         switch(op) {
             case '+':
+                LoggerFactory.getLogger(Instruction.class).debug("add");
                 return new Instruction(InstType.ADD, null);
             case '-':
+                LoggerFactory.getLogger(Instruction.class).debug("substract");
                 return new Instruction(InstType.SUB, null);
             case '/':
+                LoggerFactory.getLogger(Instruction.class).debug("divid");
                 return new Instruction(InstType.DIV, null);
             case '*':
+                LoggerFactory.getLogger(Instruction.class).debug("mulitply");
                 return new Instruction(InstType.MUL, null);
             case '^':
+                LoggerFactory.getLogger(Instruction.class).debug("power");
                 return new Instruction(InstType.NATIVEFUNC, "POW");
             default:
+                LoggerFactory.getLogger(Instruction.class).debug("no operator");
                 return null;
         }
     }

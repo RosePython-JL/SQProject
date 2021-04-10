@@ -10,6 +10,10 @@ import java.awt.event.KeyEvent;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 /**
  * Main class of the standalone program, but can also be used in other programs.
  * Instantiating this class will create a new window containing a graph and an
@@ -19,7 +23,7 @@ public class GraphWindow extends JFrame implements ActionListener {
     private JMenuBar menuBar;
     private Graph graph;
     private Sidebar sidebar;
-
+    static Logger LOGGER = LoggerFactory.getLogger(GraphWindow.class);
     private JMenuItem createNew, deleteAll, zoomIn, zoomOut, zoomReset;
 
     /**
@@ -67,6 +71,7 @@ public class GraphWindow extends JFrame implements ActionListener {
         this.setResizable(true);
         this.setVisible(true);
     }
+
 
     /**
      * Contains repetitive code to populate the menubar with items.
@@ -156,6 +161,7 @@ public class GraphWindow extends JFrame implements ActionListener {
         } else if (source.equals(this.zoomReset)) {
             this.graph.setScale(1);
         }
+
     }
 
     /**
@@ -166,12 +172,16 @@ public class GraphWindow extends JFrame implements ActionListener {
      * @param args Unused. Don't even try.
      */
     public static void main(String[] args) {
+
         try {
             // Create root window instance, or just give up
+            BasicConfigurator.configure();
+            LOGGER.info("create window");
+            LOGGER.debug("debug");
             new GraphWindow();
         } catch (Exception e) {
-            System.err.println("Failed to create graph window. Exception:\n");
-            System.err.println(e.toString());
+            LOGGER.error("Failed to create graph window. {}",e);
+
             System.exit(1);
         }
     }
